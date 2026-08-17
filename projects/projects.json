@@ -1,0 +1,20 @@
+{
+    "recent_projects": [
+        {
+            "id": "PRJ-CA-HOUSING-01",
+            "name": "California Housing Price Prediction",
+            "type": "Regression & Interpretability",
+            "created_at": "2026-07-22 07:21:14",
+            "status": "Active",
+            "path": "D:\\ML\\ML pipeline\\projects\\PRJ-CA-HOUSING-01"
+        },
+        {
+            "id": "PRJ-TEST-01",
+            "name": "Integration Test Project",
+            "type": "ML Pipeline",
+            "created_at": "2026-07-22 07:21:14",
+            "status": "Initialized",
+            "path": "D:\\ML\\ML pipeline\\projects\\PRJ-TEST-01"
+        }
+    ]
+}
