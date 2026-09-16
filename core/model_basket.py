@@ -1,63 +1,42 @@
 import numpy as np
 import pandas as pd
-from sklearn.linear_model import LinearRegression, Ridge, Lasso, ElasticNet, SGDRegressor
-from sklearn.ensemble import RandomForestRegressor, ExtraTreesRegressor, GradientBoostingRegressor, HistGradientBoostingRegressor
-from sklearn.neural_network import MLPRegressor
-from sklearn.metrics import mean_squared_error, mean_absolute_error, r2_score
+from sklearn.linear_model import LogisticRegression
+from sklearn.ensemble import RandomForestClassifier, ExtraTreesClassifier, GradientBoostingClassifier
+from sklearn.metrics import accuracy_score, precision_score, recall_score, f1_score, roc_auc_score
 
 
 PREDICTIVE_MODEL_BASKET = {
-    "Random Forest Regressor": {
-        "class": RandomForestRegressor,
-        "params": {"n_estimators": 100, "max_depth": 15, "random_state": 42},
-        "description": "Ensemble of decision trees. Captures non-linear feature interactions with high robustness."
+    "Logistic Regression": {
+        "class": LogisticRegression,
+        "params": {"max_iter": 1000, "class_weight": "balanced", "random_state": 42},
+        "description": "Interpretable probability model for estimating each customer's churn risk."
     },
-    "Gradient Boosting Regressor": {
-        "class": GradientBoostingRegressor,
+    "Random Forest Classifier": {
+        "class": RandomForestClassifier,
+        "params": {"n_estimators": 100, "max_depth": 15, "random_state": 42},
+        "description": "Robust tree ensemble that captures non-linear churn drivers and interactions."
+    },
+    "Gradient Boosting Classifier": {
+        "class": GradientBoostingClassifier,
         "params": {"n_estimators": 100, "learning_rate": 0.1, "max_depth": 5, "random_state": 42},
-        "description": "Sequential boosted decision trees. Excellent predictive performance for complex tabular data."
+        "description": "Sequential boosting model optimized for ranking customers by churn probability."
     },
-    "HistGradientBoosting Regressor": {
-        "class": HistGradientBoostingRegressor,
-        "params": {"max_iter": 100, "learning_rate": 0.1, "random_state": 42},
-        "description": "Fast histogram-based gradient boosting (similar to LightGBM). Native handling for large datasets."
-    },
-    "SGD Regressor (Gradient Descent)": {
-        "class": SGDRegressor,
-        "params": {"max_iter": 1000, "tol": 1e-3, "random_state": 42},
-        "description": "Linear model fitted using Stochastic Gradient Descent. Scalable benchmark model."
-    },
-    "Ridge Regression (L2)": {
-        "class": Ridge,
-        "params": {"alpha": 1.0},
-        "description": "Linear regression with L2 regularization penalty to prevent overfitting."
-    },
-    "Lasso Regression (L1)": {
-        "class": Lasso,
-        "params": {"alpha": 1.0, "random_state": 42},
-        "description": "Linear regression with L1 regularization penalty for sparse feature selection."
-    },
-    "Extra Trees Regressor": {
-        "class": ExtraTreesRegressor,
+    "Extra Trees Classifier": {
+        "class": ExtraTreesClassifier,
         "params": {"n_estimators": 100, "max_depth": 15, "random_state": 42},
-        "description": "Extremely randomized trees ensemble for reduced variance."
-    },
-    "MLP Neural Network": {
-        "class": MLPRegressor,
-        "params": {"hidden_layer_sizes": (64, 32), "max_iter": 500, "random_state": 42},
-        "description": "Multi-Layer Perceptron Neural Network for deep non-linear regression."
+        "description": "Highly randomized tree ensemble for a diverse churn-risk benchmark."
     }
 }
 
 
-def calculate_metrics(y_true, y_pred) -> dict:
-    mse = mean_squared_error(y_true, y_pred)
-    rmse = np.sqrt(mse)
-    mae = mean_absolute_error(y_true, y_pred)
-    r2 = r2_score(y_true, y_pred)
+def calculate_metrics(y_true, y_pred, y_proba=None) -> dict:
+    if y_proba is None:
+        y_proba = y_pred
+    auc = roc_auc_score(y_true, y_proba) if len(np.unique(y_true)) == 2 else 0.0
     return {
-        "rmse": float(rmse),
-        "mae": float(mae),
-        "r2": float(r2),
-        "mse": float(mse)
+        "accuracy": float(accuracy_score(y_true, y_pred)),
+        "precision": float(precision_score(y_true, y_pred, zero_division=0)),
+        "recall": float(recall_score(y_true, y_pred, zero_division=0)),
+        "f1": float(f1_score(y_true, y_pred, zero_division=0)),
+        "roc_auc": float(auc)
     }

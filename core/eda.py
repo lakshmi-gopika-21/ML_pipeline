@@ -10,7 +10,7 @@ def render_eda_ui():
     render_section_header("📊 Stage 3: Interactive Exploratory Data Analysis", "Analyze empirical distributions, feature correlations, non-linearities, and spatial patterns", icon="📊")
     
     df = st.session_state.get("raw_df")
-    target_col = st.session_state.get("target_col", "median_house_value")
+    target_col = st.session_state.get("target_col", "Churn")
     
     if df is None:
         st.warning("⚠️ No dataset loaded. Please complete Stage 1 (Data Ingestion) first.")

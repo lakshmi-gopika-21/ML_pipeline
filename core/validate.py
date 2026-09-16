@@ -71,7 +71,7 @@ def render_validation_ui():
     st.markdown("##### 🚦 Human Intervention: Target & Feature Gate")
     
     all_cols = list(df.columns)
-    default_target = "median_house_value" if "median_house_value" in all_cols else all_cols[-1]
+    default_target = "Churn" if "Churn" in all_cols else all_cols[-1]
     
     col_t1, col_t2 = st.columns([1, 1])
     with col_t1:

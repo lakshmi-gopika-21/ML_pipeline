@@ -34,7 +34,7 @@ def render_explainability_ui():
     frozen_model = st.session_state.get("frozen_predictive_model")
     frozen_name = st.session_state.get("frozen_predictive_name", "Predictive Model")
     val_df = st.session_state.get("val_df")
-    target_col = st.session_state.get("target_col", "median_house_value")
+    target_col = st.session_state.get("target_col", "Churn")
     
     if frozen_model is None or val_df is None:
         st.warning("⚠️ No frozen predictive model available. Please complete Stage 5 (Predictive ML Path) first.")

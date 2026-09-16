@@ -13,13 +13,12 @@ def generate_domain_features(df: pd.DataFrame) -> pd.DataFrame:
     df_feat = df.copy()
     cols = df_feat.columns
     
-    # California Housing Domain Features
-    if "total_rooms" in cols and "households" in cols:
-        df_feat["rooms_per_household"] = df_feat["total_rooms"] / (df_feat["households"] + 1e-5)
-    if "total_bedrooms" in cols and "total_rooms" in cols:
-        df_feat["bedrooms_per_room"] = df_feat["total_bedrooms"] / (df_feat["total_rooms"] + 1e-5)
-    if "population" in cols and "households" in cols:
-        df_feat["population_per_household"] = df_feat["population"] / (df_feat["households"] + 1e-5)
+    # Telco churn domain features.
+    if "tenure" in cols and "MonthlyCharges" in cols:
+        df_feat["customer_value_to_date"] = df_feat["tenure"] * df_feat["MonthlyCharges"]
+    if "TotalCharges" in cols and "tenure" in cols:
+        df_feat["average_monthly_charge"] = df_feat["TotalCharges"] / df_feat["tenure"].replace(0, np.nan)
+        df_feat["average_monthly_charge"] = df_feat["average_monthly_charge"].fillna(df_feat["MonthlyCharges"])
         
     return df_feat
 
@@ -34,20 +33,33 @@ def preprocess_and_split(
     create_domain_features: bool = True
 ):
     df_proc = df.copy()
-    
+
+    if "customerID" in df_proc.columns:
+        df_proc = df_proc.drop(columns=["customerID"])
+    if "TotalCharges" in df_proc.columns:
+        df_proc["TotalCharges"] = pd.to_numeric(df_proc["TotalCharges"], errors="coerce")
+
     if create_domain_features:
         df_proc = generate_domain_features(df_proc)
         
     # Exclude target from features if present
-    X_cols = [c for c in df_proc.columns if c != target_col and (c in feature_cols or c in ["rooms_per_household", "bedrooms_per_room", "population_per_household"])]
+    engineered_cols = ["customer_value_to_date", "average_monthly_charge"]
+    X_cols = [c for c in df_proc.columns if c != target_col and (c in feature_cols or c in engineered_cols)]
     
     X = df_proc[X_cols]
     y = df_proc[target_col]
+    if target_col == "Churn":
+        y = y.astype(str).str.strip().map({"Yes": 1, "No": 0})
+        if y.isna().any():
+            raise ValueError("Churn target must contain only Yes or No values.")
+    y = pd.to_numeric(y)
     
-    # 1. Split into Train, Validation, Test
-    X_train_val, X_test, y_train_val, y_test = train_test_split(X, y, test_size=test_size, random_state=42)
+    # 1. Split into Train, Validation, Test while preserving churn prevalence.
+    stratify = y if y.nunique() == 2 else None
+    X_train_val, X_test, y_train_val, y_test = train_test_split(X, y, test_size=test_size, random_state=42, stratify=stratify)
     val_ratio_relative = val_size / (1.0 - test_size)
-    X_train, X_val, y_train, y_val = train_test_split(X_train_val, y_train_val, test_size=val_ratio_relative, random_state=42)
+    stratify_train = y_train_val if y_train_val.nunique() == 2 else None
+    X_train, X_val, y_train, y_val = train_test_split(X_train_val, y_train_val, test_size=val_ratio_relative, random_state=42, stratify=stratify_train)
     
     # 2. Imputation & Encoding
     num_cols = X_train.select_dtypes(include=[np.number]).columns.tolist()
@@ -127,7 +139,7 @@ def render_preprocessing_ui():
     render_section_header("🛠️ Stage 4: Preprocessing & Feature Engineering Gate", "Transform raw features, compute domain ratios, apply scalers, and execute data split", icon="🛠️")
     
     df = st.session_state.get("raw_df")
-    target_col = st.session_state.get("target_col", "median_house_value")
+    target_col = st.session_state.get("target_col", "Churn")
     selected_features = st.session_state.get("selected_features", [])
     
     if df is None:
@@ -140,7 +152,7 @@ def render_preprocessing_ui():
     col1, col2 = st.columns([1, 1])
     with col1:
         st.markdown("##### 1. Feature Engineering & Scaling")
-        create_domain = st.checkbox("💡 Engineer Domain Ratios (`rooms_per_household`, `bedrooms_per_room`, `population_per_household`)", value=True)
+        create_domain = st.checkbox("💡 Engineer churn features (customer value to date and average monthly charge)", value=True)
         scaling_method = st.selectbox("Select Feature Scaler", ["StandardScaler", "MinMaxScaler", "RobustScaler", "None (Raw)"])
         
     with col2:

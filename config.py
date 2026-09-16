@@ -25,8 +25,12 @@ AVAILABLE_GROQ_MODELS = [
 ]
 
 # Primary Benchmark Dataset Settings
-CALIFORNIA_HOUSING_DEFAULT_PATH = RAW_DATA_DIR / "housing.csv"
-FALLBACK_RAW_DATA_PATH = Path("d:/ML/data/raw/housing.csv")
+CHURN_DEFAULT_PATH = RAW_DATA_DIR / "telco_churn.csv"
+CHURN_DATASET_URL = (
+    "https://raw.githubusercontent.com/ahmedshahriar/"
+    "Telco-Customer-Churn-Prediction-Streamlit-App/main/dataset/"
+    "Telco-Customer-Churn-dataset.csv"
+)
 
 # Pipeline Stages
 PIPELINE_STAGES = [
@@ -37,7 +41,7 @@ PIPELINE_STAGES = [
     ("eda", "📊 3. Exploratory Data Analysis"),
     ("preprocessing", "🛠️ 4. Feature Engineering Gate"),
     ("predictive", "🤖 5. Predictive ML Path"),
-    ("inferential", "🔬 6. Inferential & Econometrics"),
+    ("inferential", "🔬 6. Churn Risk Diagnostics"),
     ("explainability", "🔍 7. SHAP & Interpretability"),
     ("comparison", "⚖️ 8. Cross-Window Comparison"),
     ("reports", "📄 9. Reports & Slide Deck"),

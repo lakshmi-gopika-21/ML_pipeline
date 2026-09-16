@@ -24,22 +24,22 @@ def render_evaluator_ui():
         comp_rows.append({
             "Model Name": f"Predictive: {frozen_pred_name}",
             "Analytical Purpose": "Out-of-sample Prediction",
-            "Test RMSE ($)": f"${pred_test_m['rmse']:,.2f}",
-            "Test MAE ($)": f"${pred_test_m['mae']:,.2f}",
-            "Test R²": f"{pred_test_m['r2']:.4f}",
+            "Test Accuracy": f"{pred_test_m['accuracy']:.3f}",
+            "Test Recall": f"{pred_test_m['recall']:.3f}",
+            "Test ROC-AUC": f"{pred_test_m['roc_auc']:.3f}",
             "Inferential Capability": "Limited (Black-Box / SHAP surrogate)",
             "Decision Support Suitability": "Automated Real-Time Ingestion"
         })
         
     if inf_test_m:
         comp_rows.append({
-            "Model Name": "Inferential: Selected GAM / OLS",
-            "Analytical Purpose": "Causal Explanation & Elasticity",
-            "Test RMSE ($)": f"${inf_test_m['rmse']:,.2f}",
-            "Test MAE ($)": f"${inf_test_m['mae']:,.2f}",
-            "Test R²": f"{inf_test_m['r2']:.4f}",
-            "Inferential Capability": "High (Elasticities & Splines)",
-            "Decision Support Suitability": "Executive Strategy & Policy"
+            "Model Name": "Inferential: Selected Model",
+            "Analytical Purpose": "Interpretation",
+            "Test Accuracy": f"{inf_test_m.get('accuracy', 0):.3f}",
+            "Test Recall": f"{inf_test_m.get('recall', 0):.3f}",
+            "Test ROC-AUC": f"{inf_test_m.get('roc_auc', 0):.3f}",
+            "Inferential Capability": "High (Coefficients & risk drivers)",
+            "Decision Support Suitability": "Retention Strategy"
         })
         
     comp_df = pd.DataFrame(comp_rows)
