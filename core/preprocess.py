@@ -17,8 +17,7 @@ def generate_domain_features(df: pd.DataFrame) -> pd.DataFrame:
     if "tenure" in cols and "MonthlyCharges" in cols:
         df_feat["customer_value_to_date"] = df_feat["tenure"] * df_feat["MonthlyCharges"]
     if "TotalCharges" in cols and "tenure" in cols:
-        total_charges = pd.to_numeric(df_feat["TotalCharges"], errors="coerce")
-        df_feat["average_monthly_charge"] = total_charges / df_feat["tenure"].replace(0, np.nan)
+        df_feat["average_monthly_charge"] = df_feat["TotalCharges"] / df_feat["tenure"].replace(0, np.nan)
         df_feat["average_monthly_charge"] = df_feat["average_monthly_charge"].fillna(df_feat["MonthlyCharges"])
         
     return df_feat
@@ -34,7 +33,12 @@ def preprocess_and_split(
     create_domain_features: bool = True
 ):
     df_proc = df.copy()
-    
+
+    if "customerID" in df_proc.columns:
+        df_proc = df_proc.drop(columns=["customerID"])
+    if "TotalCharges" in df_proc.columns:
+        df_proc["TotalCharges"] = pd.to_numeric(df_proc["TotalCharges"], errors="coerce")
+
     if create_domain_features:
         df_proc = generate_domain_features(df_proc)
         
