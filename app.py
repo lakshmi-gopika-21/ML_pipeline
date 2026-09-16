@@ -36,7 +36,7 @@ def main():
     apply_theme()
     
     # Active state metadata
-    active_proj_id = st.session_state.get("active_project_id", "PRJ-CA-HOUSING-01")
+    active_proj_id = st.session_state.get("active_project_id", "PRJ-TELCO-CHURN-01")
     user = st.session_state.get("user", {})
     user_role = user.get("role", "Analyst") if user else None
     
@@ -44,8 +44,8 @@ def main():
     col_header, col_theme = st.columns([8, 2])
     with col_header:
         render_hero_banner(
-            title="AI-Assisted Data Science & ML Platform",
-            subtitle="End-to-End Predictive Machine Learning & Econometric Interpretability Engine",
+            title="AI-Assisted Customer Churn Prediction Platform",
+            subtitle="End-to-End churn-risk modeling, retention targeting, and explainable classification",
             active_project=active_proj_id,
             role=user_role
         )

@@ -30,9 +30,11 @@ def train_and_eval_predictive_model(model_name: str, train_df: pd.DataFrame, val
     # Predictions
     y_train_pred = model.predict(X_train)
     y_val_pred = model.predict(X_val)
+    y_train_proba = model.predict_proba(X_train)[:, 1]
+    y_val_proba = model.predict_proba(X_val)[:, 1]
     
-    train_metrics = calculate_metrics(y_train, y_train_pred)
-    val_metrics = calculate_metrics(y_val, y_val_pred)
+    train_metrics = calculate_metrics(y_train, y_train_pred, y_train_proba)
+    val_metrics = calculate_metrics(y_val, y_val_pred, y_val_proba)
     
     return {
         "model_name": model_name,
@@ -50,7 +52,7 @@ def render_predictive_ui():
     train_df = st.session_state.get("train_df")
     val_df = st.session_state.get("val_df")
     test_df = st.session_state.get("test_df")
-    target_col = st.session_state.get("target_col", "median_house_value")
+    target_col = st.session_state.get("target_col", "Churn")
     
     if train_df is None or val_df is None:
         st.warning("⚠️ Data splits not available. Please complete Stage 4 (Preprocessing) first.")
@@ -63,7 +65,7 @@ def render_predictive_ui():
     selected_models = st.multiselect(
         "Choose Predictive Models to Train & Benchmark",
         options=list(PREDICTIVE_MODEL_BASKET.keys()),
-        default=["Random Forest Regressor", "Gradient Boosting Regressor", "SGD Regressor (Gradient Descent)"]
+        default=["Logistic Regression", "Random Forest Classifier", "Gradient Boosting Classifier"]
     )
     
     st.markdown("<div style='padding-top: 6px;'></div>", unsafe_allow_html=True)
@@ -90,13 +92,15 @@ def render_predictive_ui():
                 tm = res["train_metrics"]
                 leaderboard_data.append({
                     "Model": m_name,
-                    "Val RMSE ($)": f"${vm['rmse']:,.2f}",
-                    "Val MAE ($)": f"${vm['mae']:,.2f}",
-                    "Val R²": f"{vm['r2']:.4f}",
-                    "Train R²": f"{tm['r2']:.4f}"
+                    "Val Accuracy": f"{vm['accuracy']:.3f}",
+                    "Val Precision": f"{vm['precision']:.3f}",
+                    "Val Recall": f"{vm['recall']:.3f}",
+                    "Val F1": f"{vm['f1']:.3f}",
+                    "Val ROC-AUC": f"{vm['roc_auc']:.3f}",
+                    "Train ROC-AUC": f"{tm['roc_auc']:.3f}"
                 })
             
-            lead_df = pd.DataFrame(leaderboard_data).sort_values(by="Val R²", ascending=False)
+            lead_df = pd.DataFrame(leaderboard_data).sort_values(by="Val ROC-AUC", ascending=False)
             st.dataframe(lead_df, use_container_width=True)
             
             best_model_name = lead_df.iloc[0]["Model"]
@@ -116,13 +120,14 @@ def render_predictive_ui():
                 y_test = test_df[target_col]
                 
                 y_test_pred = frozen_model.predict(X_test)
-                test_metrics = calculate_metrics(y_test, y_test_pred)
+                y_test_proba = frozen_model.predict_proba(X_test)[:, 1]
+                test_metrics = calculate_metrics(y_test, y_test_pred, y_test_proba)
                 
                 st.session_state["frozen_predictive_model"] = frozen_model
                 st.session_state["frozen_predictive_name"] = frozen_name
                 st.session_state["predictive_test_metrics"] = test_metrics
                 
-                model_save_path = MODELS_DIR / ("frozen_sgd_regressor.joblib" if "SGD" in frozen_name else "frozen_predictive_model.joblib")
+                model_save_path = MODELS_DIR / "frozen_churn_model.joblib"
                 joblib.dump(frozen_model, model_save_path)
                 
                 set_approval_gate("predictive", True)
@@ -135,9 +140,9 @@ def render_predictive_ui():
                 st.markdown("---")
                 st.markdown("##### 🧪 Untouched Out-of-Sample Test Evaluation")
                 tm1, tm2, tm3 = st.columns(3)
-                tm1.metric("Test RMSE", f"${test_metrics['rmse']:,.2f}")
-                tm2.metric("Test MAE", f"${test_metrics['mae']:,.2f}")
-                tm3.metric("Test R² Score", f"{test_metrics['r2']:.4f}")
+                tm1.metric("Test Accuracy", f"{test_metrics['accuracy']:.3f}")
+                tm2.metric("Test Recall", f"{test_metrics['recall']:.3f}")
+                tm3.metric("Test ROC-AUC", f"{test_metrics['roc_auc']:.3f}")
                 
                 frozen_name = st.session_state.get("frozen_predictive_name", "Predictive Model")
                 frozen_model = st.session_state.get("frozen_predictive_model")

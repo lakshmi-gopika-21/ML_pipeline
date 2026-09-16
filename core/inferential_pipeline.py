@@ -2,9 +2,6 @@ import os
 import joblib
 import pandas as pd
 import numpy as np
-import statsmodels.api as sm
-from statsmodels.stats.outliers_influence import variance_inflation_factor
-from statsmodels.stats.diagnostic import het_breuschpagan, het_white, linear_reset
 from sklearn.preprocessing import PolynomialFeatures
 from sklearn.linear_model import Ridge
 import plotly.express as px
@@ -15,6 +12,56 @@ from config import MODELS_DIR, RESULTS_DIR
 from utils.state import set_approval_gate, is_gate_approved
 from utils.theme import render_section_header, render_approval_banner
 
+_statsmodels_modules = None
+_statsmodels_error = None
+
+
+def _load_statsmodels():
+    """Load statsmodels only when the inferential stage is used.
+
+    statsmodels includes compiled extensions which may be blocked by Windows
+    application-control policies. Keeping this import lazy prevents that
+    optional stage from preventing the Streamlit application from starting.
+    """
+    global _statsmodels_modules, _statsmodels_error
+
+    if _statsmodels_modules is not None:
+        return _statsmodels_modules
+    if _statsmodels_error is not None:
+        return None
+
+    try:
+        import statsmodels.api as sm
+        from statsmodels.stats.diagnostic import (
+            het_breuschpagan,
+            linear_reset,
+        )
+        from statsmodels.stats.outliers_influence import variance_inflation_factor
+    except (ImportError, OSError) as exc:
+        _statsmodels_error = exc
+        return None
+
+    _statsmodels_modules = (
+        sm,
+        het_breuschpagan,
+        linear_reset,
+        variance_inflation_factor,
+    )
+    return _statsmodels_modules
+
+
+def _require_statsmodels():
+    modules = _load_statsmodels()
+    if modules is None:
+        raise RuntimeError(
+            "The inferential stage requires statsmodels, but its compiled "
+            "Windows extension could not be loaded. Check the application's "
+            "Application Control policy or reinstall statsmodels outside a "
+            "blocked/synchronized folder."
+        ) from _statsmodels_error
+    return modules
+
+
 try:
     from pygam import LinearGAM, s, f
     PYGAM_AVAILABLE = True
@@ -23,6 +70,7 @@ except ImportError:
 
 
 def iterative_vif_elimination(df_features: pd.DataFrame, initial_cols: list, threshold: float = 5.0):
+    sm, _, _, variance_inflation_factor = _require_statsmodels()
     current_cols = list(initial_cols)
     vif_history = []
     
@@ -45,11 +93,14 @@ def iterative_vif_elimination(df_features: pd.DataFrame, initial_cols: list, thr
 
 def run_ramsey_reset(ols_model, power: int = 3):
     try:
+        _, _, linear_reset, _ = _require_statsmodels()
         reset_res = linear_reset(ols_model, power=power, use_f=True)
         f_stat = float(reset_res.fvalue)
         p_val = float(reset_res.pvalue)
         passed = p_val > 0.05
         return {"f_statistic": f_stat, "p_value": p_val, "passed": passed}
+    except RuntimeError:
+        raise
     except Exception as e:
         return {"f_statistic": 0.0, "p_value": 0.5, "passed": True, "error": str(e)}
 
@@ -109,11 +160,30 @@ def render_inferential_ui():
     train_ols = st.session_state.get("train_ols")
     val_ols = st.session_state.get("val_ols")
     test_ols = st.session_state.get("test_ols")
-    target_col = st.session_state.get("target_col", "median_house_value")
+    target_col = st.session_state.get("target_col", "Churn")
     
     if train_ols is None or val_ols is None:
         st.warning("⚠️ Data splits not available. Please complete Stage 4 (Preprocessing) first.")
         return
+
+    if target_col == "Churn":
+        st.info("Churn uses classification diagnostics in Stage 5. Logistic coefficients and probability calibration are available through the frozen model and explainability stages.")
+        return
+
+    statsmodels_modules = _load_statsmodels()
+    if statsmodels_modules is None:
+        st.error(
+            "⚠️ The inferential stage is unavailable because Windows "
+            "Application Control blocked statsmodels' compiled extension."
+        )
+        st.info(
+            "The rest of the application can continue running. To enable "
+            "inferential analysis, reinstall statsmodels in an approved local "
+            "environment or ask your administrator to allow its native DLLs."
+        )
+        return
+
+    sm, het_breuschpagan, _, _ = statsmodels_modules
         
     X_train = train_ols.drop(columns=[target_col])
     y_train = train_ols[target_col]

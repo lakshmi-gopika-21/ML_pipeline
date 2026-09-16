@@ -6,16 +6,16 @@ from utils.theme import render_section_header
 
 
 def generate_markdown_report(project_meta: dict) -> str:
-    target_col = st.session_state.get("target_col", "median_house_value")
+    target_col = st.session_state.get("target_col", "Churn")
     pred_test_m = st.session_state.get("predictive_test_metrics", {})
     inf_test_m = st.session_state.get("inferential_test_metrics", {})
     vif_accepted = st.session_state.get("vif_accepted_cols", [])
     reset_res = st.session_state.get("reset_result", {})
     
     lines = []
-    lines.append(f"# Executive Machine Learning & Econometric Pipeline Report")
-    lines.append(f"**Project Identifier**: `{project_meta.get('id', 'PRJ-CA-HOUSING-01')}`  ")
-    lines.append(f"**Project Name**: {project_meta.get('name', 'California Housing Price Prediction')}  ")
+    lines.append("# Executive Customer Churn Prediction Report")
+    lines.append(f"**Project Identifier**: `{project_meta.get('id', 'PRJ-TELCO-CHURN-01')}`  ")
+    lines.append(f"**Project Name**: {project_meta.get('name', 'Telco Customer Churn Prediction')}  ")
     lines.append(f"**Generated On**: {time.strftime('%Y-%m-%d %H:%M:%S')}  ")
     lines.append(f"**Target Variable**: `{target_col}`\n")
     
@@ -26,14 +26,14 @@ def generate_markdown_report(project_meta: dict) -> str:
     lines.append("## 2. Predictive Analytical Window (Black-Box ML)")
     if pred_test_m:
         lines.append(f"- **Frozen Predictive Model**: `{st.session_state.get('frozen_predictive_name', 'N/A')}`")
-        lines.append(f"- **Untouched Test RMSE**: ${pred_test_m.get('rmse', 0):,.2f}")
-        lines.append(f"- **Untouched Test MAE**: ${pred_test_m.get('mae', 0):,.2f}")
-        lines.append(f"- **Untouched Test R²**: {pred_test_m.get('r2', 0):.4f}")
+        lines.append(f"- **Untouched Test Accuracy**: {pred_test_m.get('accuracy', 0):.3f}")
+        lines.append(f"- **Untouched Test Recall**: {pred_test_m.get('recall', 0):.3f}")
+        lines.append(f"- **Untouched Test ROC-AUC**: {pred_test_m.get('roc_auc', 0):.3f}")
     else:
         lines.append("Predictive model not yet frozen or evaluated.")
     lines.append("")
     
-    lines.append("## 3. Inferential & Econometric Analytics Window")
+    lines.append("## 3. Churn Risk Diagnostics Window")
     lines.append(f"- **VIF Threshold**: `{st.session_state.get('vif_threshold', 5.0)}`")
     lines.append(f"- **VIF-Accepted Features ({len(vif_accepted)})**: `{vif_accepted}`")
     if reset_res:
@@ -41,12 +41,12 @@ def generate_markdown_report(project_meta: dict) -> str:
         lines.append(f"- **Ramsey RESET Test p-value**: {reset_res.get('p_value', 0):.4e}")
         lines.append(f"- **Linear Specification Accepted?**: {'Yes' if reset_res.get('passed') else 'No (Non-linear/GAM required)'}")
     if inf_test_m:
-        lines.append(f"- **Inferential Test RMSE**: ${inf_test_m.get('rmse', 0):,.2f}")
-        lines.append(f"- **Inferential Test R²**: {inf_test_m.get('r2', 0):.4f}")
+        lines.append(f"- **Diagnostic Test Accuracy**: {inf_test_m.get('accuracy', 0):.3f}")
+        lines.append(f"- **Diagnostic Test ROC-AUC**: {inf_test_m.get('roc_auc', 0):.3f}")
     lines.append("")
     
     lines.append("## 4. Managerial Recommendation")
-    lines.append("For automated pricing API endpoints, deploy the high-capacity Predictive Model. For regulatory compliance, policy strategy, and stakeholder transparency, utilize the Parallel Inferential Model.")
+    lines.append("Prioritize high-recall customers for retention outreach, then use SHAP explanations and calibrated churn probabilities to target interventions.")
     
     return "\n".join(lines)
 
@@ -54,7 +54,7 @@ def generate_markdown_report(project_meta: dict) -> str:
 def render_reporter_ui():
     render_section_header("📄 Stage 9: Automated Executive Reports & Deck Generator", "Export markdown audit documents and slide deck previews for executive review", icon="📄")
     
-    project_meta = st.session_state.get("active_project_meta", {"id": "PRJ-CA-HOUSING-01", "name": "California Housing Prediction"})
+    project_meta = st.session_state.get("active_project_meta", {"id": "PRJ-TELCO-CHURN-01", "name": "Telco Customer Churn Prediction"})
     
     tab1, tab2 = st.tabs(["📝 Markdown Report Exporter", "📊 Presentation Slide Deck Preview"])
     
