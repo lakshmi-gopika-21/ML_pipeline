@@ -70,7 +70,7 @@ from ai_assistant.api_key_config import GROQ_API_KEY
 
 print(f"[OK] Groq API Key loaded: {GROQ_API_KEY[:8]}... length={len(GROQ_API_KEY)}")
 test_msg = [{"role": "system", "content": "You are an AI assistant."}, {"role": "user", "content": "Explain VIF in 1 sentence."}]
-ai_resp = groq_chat.query_groq_api(GROQ_API_KEY, "llama-3.3-70b-versatile", test_msg)
+ai_resp = groq_chat.query_groq_api(GROQ_API_KEY, "groq/compound", test_msg)
 print(f"[OK] Groq API Response: {ai_resp[:120]}...")
 
 # 8. Reports Generation

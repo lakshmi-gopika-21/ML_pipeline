@@ -17,11 +17,10 @@ for d in [PROJECTS_DIR, RAW_DATA_DIR, PROCESSED_DATA_DIR, SPLITS_DATA_DIR, MODEL
     d.mkdir(parents=True, exist_ok=True)
 
 # Default Groq Settings
-DEFAULT_GROQ_MODEL = "llama-3.3-70b-versatile"
+DEFAULT_GROQ_MODEL = "groq/compound"
 AVAILABLE_GROQ_MODELS = [
-    "llama-3.3-70b-versatile",
-    "llama-3.1-8b-instant",
-    "mixtral-8x7b-32768"
+    "groq/compound",
+    "groq/compound-mini"
 ]
 
 # Primary Benchmark Dataset Settings
@@ -42,9 +41,8 @@ PIPELINE_STAGES = [
     ("preprocessing", "🛠️ 4. Feature Engineering Gate"),
     ("predictive", "🤖 5. Predictive ML Path"),
     ("inferential", "🔬 6. Churn Risk Diagnostics"),
-    ("explainability", "🔍 7. SHAP & Interpretability"),
-    ("comparison", "⚖️ 8. Cross-Window Comparison"),
-    ("reports", "📄 9. Reports & Slide Deck"),
+    ("comparison", "⚖️ 7. Model Comparison"),
+    ("reports", "📄 8. Reports & Slide Deck"),
     ("ai_chat", "💬 Groq AI Assistant")
 ]
 

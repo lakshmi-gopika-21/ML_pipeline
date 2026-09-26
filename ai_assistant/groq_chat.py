@@ -38,11 +38,11 @@ def build_pipeline_context_prompt() -> str:
         
     pred_test_m = st.session_state.get("predictive_test_metrics", {})
     if pred_test_m:
-        ctx.append(f"- Frozen Predictive Model: {st.session_state.get('frozen_predictive_name')} (Test RMSE=${pred_test_m.get('rmse', 0):,.2f}, R2={pred_test_m.get('r2', 0):.4f})")
+        ctx.append(f"- Frozen Predictive Model: {st.session_state.get('frozen_predictive_name')} (Test ROC-AUC={pred_test_m.get('roc_auc', 0):.3f}, Recall={pred_test_m.get('recall', 0):.3f})")
         
     inf_test_m = st.session_state.get("inferential_test_metrics", {})
     if inf_test_m:
-        ctx.append(f"- Selected Inferential Model Test Metrics: RMSE=${inf_test_m.get('rmse', 0):,.2f}, R2={inf_test_m.get('r2', 0):.4f}")
+        ctx.append(f"- Selected Diagnostic Model Test Metrics: ROC-AUC={inf_test_m.get('roc_auc', 0):.3f}, Recall={inf_test_m.get('recall', 0):.3f}")
         
     return "\n".join(ctx)
 
@@ -100,17 +100,12 @@ def get_heuristic_fallback_response(user_query: str) -> str:
                 "- **If $p > 0.05$**: Linear OLS specification is acceptable.\n"
                 "- **If $p \\le 0.05$**: Non-linear patterns present! Fit a **Semiparametric GAM** or Non-linear regression model.")
         
-    elif "shap" in q or "explain" in q:
-        return ("**SHAP Values** compute Shapley game theory attributions:\n\n"
-                "- **Beeswarm Plot**: Shows feature value magnitudes vs impact on prediction.\n"
-                "- **Partial Dependence**: Shows marginal impact curves holding all other variables constant.")
-        
     else:
-        return f"I analyzed your query: '{user_query}'. For California house price prediction, key drivers include location, median income, and engineered density ratios. The dual-track predictive and econometrics path ensures full accuracy and decision transparency."
+        return f"I analyzed your query: '{user_query}'. Review churn probability, recall, ROC-AUC, and retention targeting for this customer-risk pipeline."
 
 
 def render_ai_chat_ui():
-    render_section_header("💬 Groq AI Assistant — Data Science Co-Pilot", "Context-aware AI assistant powered by Groq (llama-3.3-70b-versatile)", icon="💬")
+    render_section_header("💬 Groq AI Assistant — Data Science Co-Pilot", "Context-aware AI assistant powered by Groq Compound", icon="💬")
     
     api_key_input = st.sidebar.text_input("🔑 Groq API Key", type="password", help="Set in ai_assistant/api_key_config.py or enter here")
     groq_api_key = api_key_input or FILE_GROQ_API_KEY or os.environ.get("GROQ_API_KEY", "")
@@ -128,19 +123,16 @@ def render_ai_chat_ui():
     
     # Suggested Prompt Chips
     st.markdown("##### 💡 Suggested Questions")
-    chip_col1, chip_col2, chip_col3 = st.columns(3)
+    chip_col1, chip_col2 = st.columns(2)
     
     prompt_clicked = None
     if chip_col1.button("🔍 Explain VIF & Multicollinearity", key="chip_vif", use_container_width=True):
         prompt_clicked = "Explain VIF elimination and how it helps our linear model."
     if chip_col2.button("📐 Interpret Ramsey RESET Test", key="chip_reset", use_container_width=True):
         prompt_clicked = "How do I interpret the Ramsey RESET test p-value result?"
-    if chip_col3.button("🐝 How do SHAP plots work?", key="chip_shap", use_container_width=True):
-        prompt_clicked = "Explain SHAP summary beeswarm plots and partial dependence."
-
     if "chat_history" not in st.session_state:
         st.session_state["chat_history"] = [
-            {"role": "assistant", "content": "Hello! I am your AI Data Science Co-Pilot. Ask me any question about VIF pruning, Ramsey RESET tests, OLS vs GAM trade-offs, SHAP plots, or model evaluation!"}
+            {"role": "assistant", "content": "Hello! I am your AI Data Science Co-Pilot. Ask me about churn risk, retention metrics, or model evaluation."}
         ]
         
     for msg in st.session_state["chat_history"]:
@@ -162,7 +154,7 @@ def render_ai_chat_ui():
                     system_prompt = (
                         "You are an expert Data Science and Econometrics AI assistant embedded inside an end-to-end ML platform. "
                         "Help the user understand pipeline steps, VIF elimination, Ramsey RESET specification tests, OLS vs GAM models, "
-                        "and SHAP interpretability. Answer clearly in concise markdown.\n\n" + context_str
+                        "and churn-risk evaluation. Answer clearly in concise markdown.\n\n" + context_str
                     )
                     messages = [
                         {"role": "system", "content": system_prompt},

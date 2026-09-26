@@ -18,7 +18,6 @@ from core.eda import render_eda_ui
 from core.preprocess import render_preprocessing_ui
 from core.predictive_pipeline import render_predictive_ui
 from core.inferential_pipeline import render_inferential_ui
-from core.explainability import render_explainability_ui
 from core.evaluator import render_evaluator_ui
 from core.reporter import render_reporter_ui
 from ai_assistant.groq_chat import render_ai_chat_ui
@@ -119,8 +118,6 @@ def main():
         render_predictive_ui()
     elif selected_stage_key == "inferential":
         render_inferential_ui()
-    elif selected_stage_key == "explainability":
-        render_explainability_ui()
     elif selected_stage_key == "comparison":
         render_evaluator_ui()
     elif selected_stage_key == "reports":

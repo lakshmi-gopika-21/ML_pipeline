@@ -70,14 +70,18 @@ def render_eda_ui():
             with col_c:
                 color_by = st.selectbox("Color Segment (Optional)", options=["None"] + categorical_cols)
             
+            plot_df = df.copy()
+            is_classification_target = not pd.api.types.is_numeric_dtype(plot_df[target_col])
+            if is_classification_target:
+                plot_df[target_col] = plot_df[target_col].map({"No": 0, "Yes": 1}).fillna(plot_df[target_col])
             fig_scatter = px.scatter(
-                df,
+                plot_df,
                 x=selected_feat,
                 y=target_col,
                 color=None if color_by == "None" else color_by,
                 opacity=0.6,
-                trendline="ols",
-                title=f"{selected_feat} vs {target_col} (with OLS Trendline)"
+                trendline=None if is_classification_target else "ols",
+                title=f"{selected_feat} vs {target_col}"
             )
             fig_scatter.update_layout(template=theme_plotly, margin=dict(l=20, r=20, t=40, b=20))
             st.plotly_chart(fig_scatter, use_container_width=True)
@@ -88,8 +92,12 @@ def render_eda_ui():
         with col_g1:
             st.markdown("##### Geospatial Scatter Map")
             if "longitude" in df.columns and "latitude" in df.columns:
+                plot_df = df.copy()
+                is_classification_target = not pd.api.types.is_numeric_dtype(plot_df[target_col])
+                if is_classification_target:
+                    plot_df[target_col] = plot_df[target_col].map({"No": 0, "Yes": 1}).fillna(plot_df[target_col])
                 fig_geo = px.scatter(
-                    df,
+                    plot_df,
                     x="longitude",
                     y="latitude",
                     color=target_col if target_col in df.columns else None,

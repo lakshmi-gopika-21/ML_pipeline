@@ -46,7 +46,7 @@ def generate_markdown_report(project_meta: dict) -> str:
     lines.append("")
     
     lines.append("## 4. Managerial Recommendation")
-    lines.append("Prioritize high-recall customers for retention outreach, then use SHAP explanations and calibrated churn probabilities to target interventions.")
+    lines.append("Prioritize high-recall customers for retention outreach, then use calibrated churn probabilities and model metrics to target interventions.")
     
     return "\n".join(lines)
 
@@ -81,8 +81,8 @@ def render_reporter_ui():
             ("Slide 2: Data Ingestion & Preprocessing Audit", "Leakage-safe train/val/test partitions, median imputations, and domain ratio features."),
             ("Slide 3: Predictive ML Performance Leaderboard", "Benchmark of Random Forest, GBDT, and Neural Nets evaluated on untouched test set."),
             ("Slide 4: Inferential Econometrics & VIF Diagnostics", "Iterative VIF variable elimination, Ramsey RESET specification test, and HC3 robust standard errors."),
-            ("Slide 5: Model Interpretability & SHAP Values", "Global feature importances, SHAP beeswarm marginal attributions, and partial dependence curves."),
-            ("Slide 6: Dual Deployment Strategy & Recommendations", "Deployment architecture for automated API ingestion alongside executive policy reporting.")
+            ("Slide 5: Churn Risk Evaluation", "Compare accuracy, recall, F1, and ROC-AUC before selecting the retention model."),
+            ("Slide 6: Retention Deployment Strategy", "Prioritize high-risk customers for targeted outreach and monitor model drift.")
         ]
         
         for title, desc in slides:

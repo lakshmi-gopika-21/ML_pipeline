@@ -36,7 +36,7 @@ We have transformed the **AI-Assisted ML & Parallel Econometric Interpretability
 - **Preprocessing Gate (`preprocess.py`)**: Interactive domain ratio feature engineering checkboxes, scalers, and split size sliders.
 - **Predictive ML Path (`predictive_pipeline.py`)**: Predictive model zoo leaderboard, top model freezing controls, and actual vs predicted scatter plots.
 - **Inferential Econometrics (`inferential_pipeline.py`)**: Iterative VIF elimination history table, Ramsey RESET test result card, Breusch-Pagan heteroskedasticity indicator, and GAM spline metrics.
-- **SHAP & Interpretability (`explainability.py`)**: Feature importance bar charts, SHAP beeswarm plot renderer, and Partial Dependence curves.
+- **Model Comparison**: Compare churn classification metrics and retention deployment recommendations.
 - **Cross-Window Evaluation (`evaluator.py`)**: Decision support matrix comparing Predictive Accuracy vs Econometric Clarity with deployment recommendation cards.
 - **Automated Reports (`reporter.py`)**: Markdown executive report downloader and 6-slide presentation deck cards.
 - **Groq AI Assistant (`groq_chat.py`)**: AI Data Science Co-Pilot interface with suggested question chips, LLM status badges, and token optimization.
