@@ -10,7 +10,6 @@ def render_evaluator_ui():
     pred_test_m = st.session_state.get("predictive_test_metrics")
     
     inf_test_m = st.session_state.get("inferential_test_metrics")
-    inf_model = st.session_state.get("selected_inferential_model")
     
     if pred_test_m is None and inf_test_m is None:
         st.warning("⚠️ No frozen models evaluated yet. Please complete Stage 5 and Stage 6 first.")
@@ -27,7 +26,7 @@ def render_evaluator_ui():
             "Test Accuracy": f"{pred_test_m['accuracy']:.3f}",
             "Test Recall": f"{pred_test_m['recall']:.3f}",
             "Test ROC-AUC": f"{pred_test_m['roc_auc']:.3f}",
-            "Inferential Capability": "Limited (Black-Box / SHAP surrogate)",
+            "Inferential Capability": "Limited (Black-Box)",
             "Decision Support Suitability": "Automated Real-Time Ingestion"
         })
         
@@ -48,24 +47,8 @@ def render_evaluator_ui():
     st.markdown("---")
     st.markdown("##### 🎯 Executive Decision Recommendation")
     
-    if pred_test_m and inf_test_m:
-        diff_r2 = pred_test_m['r2'] - inf_test_m['r2']
-        if diff_r2 > 0.05:
-            st.markdown(f"""
-            <div class="glass-card" style="border-left: 4px solid #6366F1;">
-                <h4 style="margin: 0; color: #818CF8;">💡 Dual-Track Deployment Strategy Recommended</h4>
-                <p style="margin: 6px 0 0 0; color: #CBD5E1; font-size: 0.92rem;">
-                    Deploy <strong>{frozen_pred_name}</strong> for automated high-volume production inference (predictive gain of +{diff_r2:.4f} R²). 
-                    Utilize the <strong>Econometric GAM / OLS Model</strong> for policy formulation, pricing elasticities, and stakeholder reporting.
-                </p>
-            </div>
-            """, unsafe_allow_html=True)
-        else:
-            st.markdown(f"""
-            <div class="glass-card" style="border-left: 4px solid #10B981;">
-                <h4 style="margin: 0; color: #34D399;">💡 Parsimonious Interpretable Deployment Recommended</h4>
-                <p style="margin: 6px 0 0 0; color: #CBD5E1; font-size: 0.92rem;">
-                    Deploy the <strong>Inferential GAM / OLS Model</strong> directly into production! Its predictive accuracy (Test R² = {inf_test_m['r2']:.4f}) matches the black-box model while preserving full mathematical interpretability.
-                </p>
-            </div>
-            """, unsafe_allow_html=True)
+    if pred_test_m:
+        st.success(
+            f"Deploy `{frozen_pred_name}` for retention prioritization. "
+            "Use recall and ROC-AUC to monitor customer-risk coverage."
+        )

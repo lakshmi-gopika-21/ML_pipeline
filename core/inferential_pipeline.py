@@ -167,7 +167,7 @@ def render_inferential_ui():
         return
 
     if target_col == "Churn":
-        st.info("Churn uses classification diagnostics in Stage 5. Logistic coefficients and probability calibration are available through the frozen model and explainability stages.")
+        st.info("Churn uses classification diagnostics in Stage 5. Review probability metrics and retention performance there.")
         return
 
     statsmodels_modules = _load_statsmodels()

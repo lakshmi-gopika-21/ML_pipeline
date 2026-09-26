@@ -31,8 +31,6 @@ def init_session_state():
         "gam_model": None,
         "inferential_selected_model": None,
         "inferential_metrics": {},
-        "shap_values": None,
-        "shap_explainer": None,
         "approval_gates": {
             "validation": False,
             "preprocessing": False,
